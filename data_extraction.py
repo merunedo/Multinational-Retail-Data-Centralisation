@@ -1,53 +1,30 @@
-# psycopg2 for connecting to PostgreSQL databases
-# yaml for parsing YAML files to read database credentials
-import psycopg2
 import yaml
+from sqlalchemy import create_engine
 
-class DataExtractor:
+class DatabaseConnector:
+    def __init__(self, creds_file):
+        self.db_creds = self.read_db_creds(creds_file)
+        self.engine = self.init_db_engine()
 
-    # Constructor that initializes the class with database configuration
-    def __init__(self, db_config_path):
-        # Load database credentials from the provided YAML file path
-        with open(db_config_path, 'r') as config_file:
-            self.db_config = yaml.safe_load(config_file)
-        # Establish a database connection
-        self.db_connection = self._connect_to_db()
+    @staticmethod
+    def read_db_creds(creds_file):
+        with open(creds_file, 'r') as file:
+            credentials = yaml.safe_load(file)
+        return credentials
 
-    # Private method to establish connection to the database
-    def _connect_to_db(self):
-        # Connect to the database using credentials
-        return psycopg2.connect(
-            host=self.db_config['RDS_HOST'],
-            user=self.db_config['RDS_USER'],
-            password=self.db_config['RDS_PASSWORD'],
-            database=self.db_config['RDS_DATABASE'],
-            port=self.db_config['RDS_PORT']
-        )
+    def init_db_engine(self):
+        user = self.db_creds['RDS_USER']
+        password = self.db_creds['RDS_PASSWORD']
+        host = self.db_creds['RDS_HOST']
+        port = self.db_creds['RDS_PORT']
+        db = self.db_creds['RDS_DATABASE']
+        # For PostgreSQL, the connection string is formatted as follows:
+        connection_string = f'postgresql://{user}:{password}@{host}:{port}/{db}'
+        engine = create_engine(connection_string)
+        return engine
 
-    # Method to extract data from the database using a SQL query
-    def extract_from_db(self, query):
-        # Execute the query and return the results
-        with self.db_connection.cursor() as cursor:
-            cursor.execute(query)
-            return cursor.fetchall()
+# Example usage
+creds_file = 'db_creds.yaml'  # Path to your credentials YAML file
+connector = DatabaseConnector(creds_file)
 
-    # Method to close the database connection
-    def close_db_connection(self):
-        # Close the database connection if it's open
-        if self.db_connection:
-            self.db_connection.close()
-
-# Example usage:
-# Provide the path to your YAML file that contains database credentials
-db_config_path = 'db_creds.yaml'
-extractor = DataExtractor(db_config_path=db_config_path)
-
-# Here you will write your SQL query to extract data
-query = 'SELECT * FROM your_table_name'
-db_data = extractor.extract_from_db(query)
-
-# Print the data to see if it's working
-print(db_data)
-
-# Don't forget to close the connection when done
-extractor.close_db_connection()
+# Now you can use connector.engine to interact with your database using SQLAlchemy
