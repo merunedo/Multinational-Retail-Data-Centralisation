@@ -1,6 +1,6 @@
 import yaml
 import pandas as pd
-from sqlalchemy import create_engine, MetaData
+from sqlalchemy import create_engine, MetaData, inspect 
 
 # DatabaseConnector class handles connecting to the database
 class DatabaseConnector:
@@ -31,6 +31,13 @@ class DatabaseConnector:
         meta = MetaData()
         meta.reflect(bind=self.engine)
         return meta.tables.keys()
+    
+    # Add this new method to the DatabaseConnector class 
+    def print_table_names(self):
+        inspector = inspect(self.engine)
+        table_names = inspector.get_table_names()
+        print(table_names)
+        return table_names
 
 # DataExtractor class is used to fetch data from the database
 class DataExtractor:
@@ -56,8 +63,16 @@ connector = DatabaseConnector(creds_file)  # Creates a DatabaseConnector object 
 extractor = DataExtractor(connector)  # Creates a DataExtractor object with the connector
 
 # Replace 'your_table_name' with the actual table name you want to query
-table_name = "your_table_name"  # TODO: Replace with your actual table name
-# Use the read_rds_table method to read the table and store it in a DataFrame
-data_frame = extractor.read_rds_table(table_name)
-# Print out the DataFrame to the console
-print(data_frame)
+table_name = connector.print_table_names()  # TODO: Replace with your actual table name
+
+# Let's say you want to fetch data from the first table in the list
+# Make sure there is at least one table name in the list before trying to access it
+if table_name:
+    table_name = table_name[0]  # Select the first table name
+
+    # Use the read_rds_table method to read the table and store it in a DataFrame
+    data_frame = extractor.read_rds_table(table_name)
+    # Print out the DataFrame to the console
+    print(data_frame)
+else:
+    print("No tables found in the database.")
