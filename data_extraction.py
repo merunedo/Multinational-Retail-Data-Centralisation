@@ -71,6 +71,26 @@ class DatabaseConnector:
         table_names = inspector.get_table_names()
         print(table_names)
         return table_names
+    
+    def upload_to_db(self, df, table_name):
+        '''
+        This method uploads a pandas DataFrame to the specified table in the database.
+
+        Parameters:
+        - df: pandas DataFrame to be uploaded.
+        - table_name: Name of the table where the DataFrame should be uploaded.
+
+        Returns:
+        None
+        '''
+        # Create database engine using the init_db_engine method
+        engine = self.init_db_engine()
+
+        # Use pandas to_sql method to upload the DataFrame
+        df.to_sql(table_name, engine, if_exists='replace', index=False)
+
+        # Close the connection
+        engine.dispose()
 
 # DataExtractor class is used to fetch data from the database
 class DataExtractor:
