@@ -51,13 +51,12 @@ class DataExtractor:
         return data_frame
 
 # Example usage of the classes above
-
-creds_file = 'db_creds.yaml'  # Path to your credentials YAML file
+creds_file = r'C:\Users\mudi\OneDrive\Documents\Dataset\Multinational Retail Data Centralisation\db_creds.yaml'  # Path to your credentials YAML file
 connector = DatabaseConnector(creds_file)  # Creates a DatabaseConnector object with the credentials file
 extractor = DataExtractor(connector)  # Creates a DataExtractor object with the connector
 
 # Replace 'your_table_name' with the actual table name you want to query
-table_name = "your_table_name"
+table_name = "your_table_name"  # TODO: Replace with your actual table name
 # Use the read_rds_table method to read the table and store it in a DataFrame
 data_frame = extractor.read_rds_table(table_name)
 # Print out the DataFrame to the console
