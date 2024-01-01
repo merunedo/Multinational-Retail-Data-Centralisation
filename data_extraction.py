@@ -2,6 +2,39 @@ import yaml
 import pandas as pd
 from sqlalchemy import create_engine, MetaData, inspect 
 
+
+class DataCleaning:
+    
+    @staticmethod
+    def clean_user_data(df):
+        # Replace NULL values or fill them with default values
+        # For instance, if 'age' column has NULL values, you could set them to the median age
+        if 'age' in df.columns:
+            df['age'] = df['age'].fillna(df['age'].median())
+
+        # Correct errors with dates
+        if 'signup_date' in df.columns:
+            df['signup_date'] = pd.to_datetime(df['signup_date'], errors='coerce')
+
+        # Handle incorrectly typed values
+        if 'user_id' in df.columns:
+            df['user_id'] = pd.to_numeric(df['user_id'], errors='coerce', downcast='integer')
+
+        # Remove rows filled with the wrong information
+        if 'email' in df.columns:
+            df = df[df['email'].str.contains('@')]
+
+        # Remove rows where the date conversion failed
+        df = df.dropna(subset=['signup_date'])
+
+        # Remove rows where the user_id conversion failed (e.g., negative values are not valid)
+        df = df[df['user_id'] > 0]
+
+        # More cleaning rules can be added as needed based on the data issues
+
+        return df
+
+    
 # DatabaseConnector class handles connecting to the database
 class DatabaseConnector:
     def __init__(self, creds_file):
