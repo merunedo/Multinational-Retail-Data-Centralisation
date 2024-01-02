@@ -1,6 +1,8 @@
 import yaml
 import pandas as pd
-from sqlalchemy import create_engine, MetaData, inspect 
+from sqlalchemy import create_engine, MetaData, inspect
+from tabula import read_pdf
+
 
 class DataCleaning:
     
@@ -108,6 +110,16 @@ class DataExtractor:
         with self.database_connector.engine.connect() as connection:
             data_frame = pd.read_sql(query, connection)
         return data_frame
+    
+    @staticmethod
+    def retrieve_pdf_data(pdf_path):
+        # Assuming all tables span across multiple pages and need to be extracted
+        # Use lattice=True if tables have lines demarcating cells which usually gives better results
+        df_list = read_pdf(pdf_path, pages='all', multiple_tables=True, lattice=True)
+        # Concatenate all dataframes into one if there are multiple tables
+        return pd.concat(df_list, ignore_index=True) if df_list else pd.DataFrame()
+
+
 
 # Example usage of the classes above
 creds_file = r'C:\Users\mudi\OneDrive\Documents\Dataset\Multinational Retail Data Centralisation\db_creds.yaml'  # Path to your credentials YAML file
@@ -139,3 +151,10 @@ else:
         df.to_sql(name=table_name, con=db_engine, if_exists='replace', index=False)
         print(f"Data uploaded to table {table_name} successfully.")
 
+def retrieve_pdf_data(self, pdf_path):
+        # Use tabula to read a PDF file and return all tables as a pandas DataFrame.
+        # We assume that all tables span across multiple pages and need to be extracted.
+        # 'lattice=True' is used if tables have lines demarcating cells which usually gives better results.
+        df_list = read_pdf(pdf_path, pages='all', multiple_tables=True, lattice=True)
+        # Concatenate all dataframes into one if there are multiple tables.
+        return pd.concat(df_list, ignore_index=True) if df_list else pd.DataFrame()
