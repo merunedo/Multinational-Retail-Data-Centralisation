@@ -2,7 +2,6 @@ import yaml
 import pandas as pd
 from sqlalchemy import create_engine, MetaData, inspect 
 
-
 class DataCleaning:
     
     @staticmethod
@@ -129,3 +128,14 @@ if table_name:
     print(data_frame)
 else:
     print("No tables found in the database.")
+
+    @staticmethod
+    def upload_to_db(df, table_name, db_creds):
+        # Create a database engine
+        db_connection_str = f"mysql+pymysql://{db_creds['RDS_USER']}:{db_creds['RDS_PASSWORD']}@{db_creds['RDS_HOST']}:{db_creds['RDS_PORT']}/{db_creds['RDS_DATABASE']}"
+        db_engine = create_engine(db_connection_str)
+
+        # Upload the DataFrame to the database
+        df.to_sql(name=table_name, con=db_engine, if_exists='replace', index=False)
+        print(f"Data uploaded to table {table_name} successfully.")
+
